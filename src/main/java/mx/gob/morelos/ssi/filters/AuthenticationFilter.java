@@ -33,7 +33,7 @@ public class AuthenticationFilter implements Filter {
         String path = uri != null && contextPath != null && uri.startsWith(contextPath)
                 ? uri.substring(contextPath.length()) : uri;
 
-        // ¡ESCUDO PARA LA API!
+        // API pública (se autentica por token)
         if (path != null && path.startsWith("/api/")) {
             chain.doFilter(req, res);
             return;
@@ -75,9 +75,9 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        // Rutas del magistrado solo para magistrados
-        if ((path.equals("/mis-tocas") || path.startsWith("/mis-tocas/")
-                || path.equals("/agenda")
+        // Rutas EXCLUSIVAS del magistrado (agenda, resoluciones)
+        // /mis-tocas y /perfil quedan accesibles para ambos roles.
+        if ((path.equals("/agenda")
                 || path.equals("/resoluciones") || path.startsWith("/resoluciones/"))
                 && !"Magistrado".equalsIgnoreCase(user.getRole())) {
             handleForbidden(request, response);
@@ -89,7 +89,7 @@ public class AuthenticationFilter implements Filter {
 
     private boolean isPublicResource(String path) {
         if (path.startsWith("/api/")) {
-            return true; // SALTA TODOS LOS FILTROS SI ES API
+            return true;
         }
         return path.equals("/")
                 || path.equals("/index.jsp")

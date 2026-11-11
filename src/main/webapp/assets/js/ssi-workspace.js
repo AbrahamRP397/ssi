@@ -36,4 +36,32 @@
             p.style.display = p.dataset.tabPanel === name ? "" : "none";
         });
     });
+
+    /* ---------- Back-button fallback ---------- */
+    document.addEventListener("click", function (e) {
+        const back = e.target.closest(".back-button");
+        if (!back) return;
+        const href = back.getAttribute("href");
+        if (!href || href.startsWith("#")) return;
+        if (e.target !== back) {
+            e.preventDefault();
+            window.location.href = href;
+        }
+    });
+
+    /* ---------- Panel de notificaciones ---------- */
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest("#btnNotifications");
+        const panel = document.getElementById("notificationPanel");
+        if (!panel) return;
+
+        if (btn) {
+            e.stopPropagation();
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+            return;
+        }
+        if (!e.target.closest("#notificationPanel")) {
+            panel.style.display = "none";
+        }
+    });
 })();

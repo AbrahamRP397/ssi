@@ -73,7 +73,7 @@
                   <tr class="room-row"
                       data-search="${fn:toLowerCase(r.name)} ${fn:toLowerCase(r.districtLabel)} ${fn:toLowerCase(r.magistrateName)}">
                     <td><strong><c:out value="${r.name}"/></strong></td>
-                    <td><c:out value="${r.address}"/></td> <!-- NUEVO CAMPO -->
+                    <td><c:out value="${r.address}"/></td>
                     <td><c:out value="${r.districtLabel}"/></td>
                     <td>
                       <div class="magistrate-cell">
@@ -86,22 +86,34 @@
                     <td><span class="case-count"><c:out value="${r.activeTocas}"/></span></td>
                     <td>
                       <div class="row-actions">
-                        <button class="icon-text-button" type="button">
+                        <button class="icon-text-button btn-editar-sala" type="button"
+                                data-id="${r.idRoom}"
+                                data-name="${fn:escapeXml(r.name)}"
+                                data-address="${fn:escapeXml(r.address)}"
+                                data-district="${r.idDistrict}">
                           <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="m4 20 4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11zM14.5 7l3 3"/>
                           </svg>
                           Editar
                         </button>
-                        <!-- BOTÓN DE DESACTIVAR CONECTADO AL JS -->
-                        <c:if test="${r.active}">
-                          <button class="icon-text-button icon-text-button--danger btn-desactivar-sala"
-                                  type="button" data-id="${r.idRoom}" data-name="${r.name}">
-                            <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
-                              <circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>
-                            </svg>
-                            Desactivar
-                          </button>
-                        </c:if>
+                        <!-- BOTÓN DINÁMICO (ACTIVAR / DESACTIVAR) -->
+                        <button class="icon-text-button ${r.active ? 'icon-text-button--danger' : ''} btn-toggle-sala"
+                                type="button" data-id="${r.idRoom}" data-name="${fn:escapeXml(r.name)}" data-active="${r.active}">
+                          <c:choose>
+                            <c:when test="${r.active}">
+                              <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>
+                              </svg>
+                              Desactivar
+                            </c:when>
+                            <c:otherwise>
+                              <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m5 12 4 4L19 6"/>
+                              </svg>
+                              Activar
+                            </c:otherwise>
+                          </c:choose>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -155,7 +167,6 @@
         <input type="text" name="name" required placeholder="Ej. Sala Sexta">
       </label>
 
-      <!-- NUEVO CAMPO DE DIRECCIÓN -->
       <label class="modal-field">
         <span>Dirección física</span>
         <input type="text" name="address" required placeholder="Ej. Av. Morelos #123, Col. Centro">
@@ -184,10 +195,77 @@
   </section>
 </div>
 
+<!-- MODAL DE EDICIÓN -->
+<div class="modal-backdrop" id="modalEditarSala" style="display:none;" role="presentation">
+  <section class="resolution-modal" role="dialog" aria-modal="true" aria-labelledby="editarSalaTitle">
+    <header>
+      <div class="modal-icon">
+        <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m4 20 4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11zM14.5 7l3 3"/>
+        </svg>
+      </div>
+      <div>
+        <p class="section-kicker">Estructura jurisdiccional</p>
+        <h2 id="editarSalaTitle">Editar Sala</h2>
+      </div>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar">
+        <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18"/>
+        </svg>
+      </button>
+    </header>
+
+    <form id="formEditarSala" action="${contextPath}/admin/salas/editar" method="post">
+      <input type="hidden" name="csrfToken" value="<c:out value='${requestScope.csrfToken}'/>">
+      <input type="hidden" name="idRoom" id="editIdRoom">
+
+      <label class="modal-field">
+        <span>Nombre de la Sala</span>
+        <input type="text" name="name" id="editName" required>
+      </label>
+
+      <label class="modal-field">
+        <span>Dirección física</span>
+        <input type="text" name="address" id="editAddress" required>
+      </label>
+
+      <label class="modal-field">
+        <span>Distrito Judicial</span>
+        <select name="idDistrict" id="editDistrict" required>
+          <c:forEach var="d" items="${districts}">
+            <option value="${d.idDistrict}"><c:out value="${d.name}"/></option>
+          </c:forEach>
+        </select>
+      </label>
+
+      <div class="modal-actions">
+        <button class="cancel-button" type="button" data-modal-close>Cancelar</button>
+        <button class="primary-action" type="submit">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 12 4 4L19 6"/>
+          </svg>
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
 <div id="toast" class="toast-message" role="status" aria-live="polite"></div>
 
 <script src="${contextPath}/assets/js/ssi-api.js"></script>
 <script src="${contextPath}/assets/js/ssi-workspace.js"></script>
 <script src="${contextPath}/assets/js/ssi-rooms.js"></script>
+<script>
+  // Implementación básica de Toast si no la tienes en este archivo
+  window.showToast = window.showToast || function(msg, type) {
+    const toast = document.getElementById("toast");
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.dataset.type = type;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  };
+</script>
 </body>
 </html>

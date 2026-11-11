@@ -64,6 +64,13 @@
           </svg>
           <span>Auditoría</span>
         </a>
+        <a href="${pageContext.request.contextPath}/perfil"
+           class="${view == 'profile' ? 'active' : ''}">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4.2 3.4-6 8-6s7.3 1.8 8 6"/>
+          </svg>
+          <span>Mi Perfil</span>
+        </a>
       </c:when>
       <c:otherwise>
         <a href="${pageContext.request.contextPath}/mis-tocas"

@@ -94,12 +94,12 @@
                             </svg>
                             <input type="search" id="searchTocas" placeholder="Buscar por número…">
                         </label>
-                        <button class="filter-button" type="button" id="btnStatusFilter">
-                            <span id="statusFilterLabel">Todos los estados</span>
-                            <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="m9 6 6 6-6 6"/>
-                            </svg>
-                        </button>
+                        <select class="filter-button" id="statusFilterSelect">
+                            <option value="">Todos los estados</option>
+                            <option value="Nueva">Nueva</option>
+                            <option value="En ponencia">En ponencia</option>
+                            <option value="Resuelto">Resuelto</option>
+                        </select>
                     </div>
                 </div>
 

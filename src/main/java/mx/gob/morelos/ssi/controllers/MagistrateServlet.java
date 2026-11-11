@@ -174,7 +174,7 @@ public class MagistrateServlet extends HttpServlet {
                 return;
             }
 
-            m.setStatus(0);
+            m.setStatus(m.getStatus() == 1 ? 0 : 1);
             if (!magistrateDao.update(m)) {
                 sendJson(res, 500, false, "error", "No fue posible desactivar al magistrado.", null);
                 return;

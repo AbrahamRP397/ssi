@@ -25,8 +25,11 @@
         </jsp:include>
 
         <main class="main-content">
-            <a class="back-button" href="${contextPath}/mis-tocas">
-                <span>←</span> Volver a Mis Tocas
+            <a class="back-button" href="${contextPath}/mis-tocas" id="backToTocas">
+                <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Volver a Mis Tocas
             </a>
 
             <div class="case-heading">

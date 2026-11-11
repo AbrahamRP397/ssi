@@ -9,9 +9,8 @@ import java.util.List;
 
 public class RoomDao implements Dao<Room, Integer> {
 
-    // ¡OJO! Aquí ya NO pedimos r.address en el SELECT
     private static final String BASE_SELECT = """
-            SELECT r.id_room, r.id_district, r.name, r.status,
+            SELECT r.id_room, r.id_district, r.name, r.address, r.status,
                    d.name AS district_name,
                    TRIM(COALESCE(u.name,'') || ' ' || COALESCE(u.surname,'') || ' ' || COALESCE(u.lastname,'')) AS magistrate_name,
                    (SELECT COUNT(*) FROM tocas t
@@ -67,13 +66,13 @@ public class RoomDao implements Dao<Room, Integer> {
 
     @Override
     public boolean create(Room r) {
-        // Insertamos, pero si falla por address, no importa
-        String sql = "INSERT INTO rooms (id_district, name, status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO rooms (id_district, name, address, status) VALUES (?, ?, ?, ?)";
         try (Connection conn = SQLConnector.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, r.getIdDistrict());
             ps.setString(2, r.getName());
-            ps.setInt(3, r.getStatus() == null ? 1 : r.getStatus());
+            ps.setString(3, r.getAddress());
+            ps.setInt(4, r.getStatus() == null ? 1 : r.getStatus());
             if (ps.executeUpdate() != 1) return false;
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) r.setIdRoom(keys.getLong(1));
@@ -86,10 +85,9 @@ public class RoomDao implements Dao<Room, Integer> {
 
     @Override
     public boolean update(Room r) {
-        // 1. Validar si cambió el distrito
+        // Validar si cambió el distrito
         Room original = getById(r.getIdRoom().intValue());
         if (original != null && !original.getIdDistrict().equals(r.getIdDistrict())) {
-            // Si cambió el distrito, verificar si tiene tocas
             String checkSql = "SELECT COUNT(*) FROM tocas WHERE id_room = ?";
             try (Connection conn = SQLConnector.getConnection();
                  PreparedStatement ps = conn.prepareStatement(checkSql)) {
@@ -104,13 +102,12 @@ public class RoomDao implements Dao<Room, Integer> {
             }
         }
 
-        // 2. Proceder con la actualización normal
         String sql = "UPDATE rooms SET id_district = ?, name = ?, address = ?, status = ? WHERE id_room = ?";
         try (Connection conn = SQLConnector.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, r.getIdDistrict());
             ps.setString(2, r.getName());
-            ps.setString(3, r.getAddress()); // Ojo: asegúrate de que Room tenga el getter/setter de address
+            ps.setString(3, r.getAddress());
             ps.setInt(4, r.getStatus() == null ? 1 : r.getStatus());
             ps.setLong(5, r.getIdRoom());
             return ps.executeUpdate() == 1;
@@ -154,8 +151,7 @@ public class RoomDao implements Dao<Room, Integer> {
             r.setIdRoom(rs.getLong("id_room"));
             r.setIdDistrict(rs.getLong("id_district"));
             r.setName(rs.getString("name"));
-            // Como no pedimos address en el SELECT, aquí lo ponemos directo
-            r.setAddress("Sin dirección");
+            r.setAddress(rs.getString("address"));
             r.setStatus(rs.getInt("status"));
             r.setDistrictName(rs.getString("district_name"));
             String mag = rs.getString("magistrate_name");

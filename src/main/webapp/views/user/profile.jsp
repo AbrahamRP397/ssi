@@ -45,7 +45,7 @@
           <p>
             <c:choose>
               <c:when test="${user.role == 'Administrador'}">Administrador del sistema</c:when>
-              <c:otherwise>Magistrado · Sala Tercera</c:otherwise>
+              <c:otherwise>Magistrado</c:otherwise>
             </c:choose>
           </p>
           <span class="status-badge status-badge--green">
@@ -61,7 +61,6 @@
           </div>
           <div>
             <span>Distrito judicial</span>
-            <!-- ✅ SOLUCIÓN: Usamos la variable enviada por el Servlet -->
             <strong><c:out value="${districtLabel}"/></strong>
           </div>
           <div>
@@ -75,7 +74,6 @@
           </div>
           <div>
             <span>Último acceso</span>
-            <!-- ✅ SOLUCIÓN: Usamos la variable enviada por el Servlet -->
             <strong><c:out value="${lastAccessLabel}"/></strong>
           </div>
         </article>

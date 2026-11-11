@@ -17,8 +17,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// AGREGAMOS LA RUTA PARA DESACTIVAR
-@WebServlet(name = "RoomServlet", urlPatterns = {"/admin/salas", "/admin/salas/save", "/admin/salas/desactivar"})
+@WebServlet(name = "RoomServlet", urlPatterns = {
+        "/admin/salas",
+        "/admin/salas/save",
+        "/admin/salas/editar",
+        "/admin/salas/desactivar"
+})
 public class RoomServlet extends HttpServlet {
 
     private RoomDao roomDao;
@@ -58,6 +62,8 @@ public class RoomServlet extends HttpServlet {
 
         if ("/admin/salas/save".equals(req.getServletPath())) {
             saveRoom(req, res, user);
+        } else if ("/admin/salas/editar".equals(req.getServletPath())) {
+            updateRoom(req, res, user);
         } else if ("/admin/salas/desactivar".equals(req.getServletPath())) {
             deactivateRoom(req, res, user);
         } else {
@@ -68,10 +74,9 @@ public class RoomServlet extends HttpServlet {
     private void saveRoom(HttpServletRequest req, HttpServletResponse res, User user) throws IOException {
         try {
             String name = trim(req.getParameter("name"));
-            String address = trim(req.getParameter("address")); // <-- NUEVO
+            String address = trim(req.getParameter("address"));
             Long idDistrict = parseLong(req.getParameter("idDistrict"));
 
-            // Validar que la dirección no venga vacía
             if (name.isBlank() || address.isBlank() || idDistrict == null) {
                 sendJson(res, 400, false, "warning", "Completa el nombre, la dirección y el distrito.", null);
                 return;
@@ -86,7 +91,7 @@ public class RoomServlet extends HttpServlet {
             Room r = new Room();
             r.setIdDistrict(idDistrict);
             r.setName(name);
-            r.setAddress(address); // <-- NUEVO
+            r.setAddress(address);
             r.setStatus(1);
 
             if (!roomDao.create(r)) {
@@ -109,7 +114,53 @@ public class RoomServlet extends HttpServlet {
         }
     }
 
-    // NUEVA LÓGICA DE DESACTIVACIÓN
+    private void updateRoom(HttpServletRequest req, HttpServletResponse res, User user) throws IOException {
+        try {
+            Long idRoom = parseLong(req.getParameter("idRoom"));
+            String name = trim(req.getParameter("name"));
+            String address = trim(req.getParameter("address"));
+            Long idDistrict = parseLong(req.getParameter("idDistrict"));
+
+            if (idRoom == null || name.isBlank() || address.isBlank() || idDistrict == null) {
+                sendJson(res, 400, false, "warning", "Completa todos los campos.", null);
+                return;
+            }
+
+            Room r = roomDao.getById(idRoom.intValue());
+            if (r == null) {
+                sendJson(res, 404, false, "error", "La sala no existe.", null);
+                return;
+            }
+
+            District d = districtDao.getById(idDistrict.intValue());
+            if (d == null) {
+                sendJson(res, 400, false, "warning", "Distrito no válido.", null);
+                return;
+            }
+
+            r.setName(name);
+            r.setAddress(address);
+            r.setIdDistrict(idDistrict);
+
+            if (!roomDao.update(r)) {
+                sendJson(res, 500, false, "error", "No fue posible actualizar la sala.", null);
+                return;
+            }
+
+            try {
+                auditDao.log(user.getId(), user.getFullName(), "administrador",
+                        "Editó una sala", name + " · " + d.getName(), "gold");
+            } catch (RuntimeException ignored) {}
+
+            sendJson(res, 200, true, "success", "Sala actualizada correctamente.", null);
+        } catch (RuntimeException ex) {
+            getServletContext().log("Error al editar sala.", ex);
+            sendJson(res, 500, false, "error", ex.getMessage() != null && ex.getMessage().contains("tocas")
+                    ? ex.getMessage()
+                    : "No fue posible actualizar la sala.", null);
+        }
+    }
+
     private void deactivateRoom(HttpServletRequest req, HttpServletResponse res, User user) throws IOException {
         try {
             Long idRoom = parseLong(req.getParameter("idRoom"));
@@ -124,13 +175,13 @@ public class RoomServlet extends HttpServlet {
                 return;
             }
 
-            // REGLA DE NEGOCIO: No se puede desactivar si tiene tocas pendientes
             if (roomDao.hasPendingTocas(idRoom.intValue())) {
-                sendJson(res, 409, false, "warning", "No se puede desactivar la sala porque tiene tocas pendientes de resolución.", null);
+                sendJson(res, 409, false, "warning",
+                        "No se puede desactivar la sala porque tiene tocas pendientes de resolución.", null);
                 return;
             }
 
-            r.setStatus(0);
+            r.setStatus(r.getStatus() == 1 ? 0 : 1);
             if (!roomDao.update(r)) {
                 sendJson(res, 500, false, "error", "No fue posible desactivar la sala.", null);
                 return;
@@ -148,7 +199,6 @@ public class RoomServlet extends HttpServlet {
         }
     }
 
-    // utilidades
     private User getUser(HttpServletRequest req) {
         HttpSession s = req.getSession(false);
         if (s == null) return null;

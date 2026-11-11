@@ -73,30 +73,38 @@
                     <td><c:out value="${m.email}"/></td>
                     <td><c:out value="${m.roomName}"/></td>
                     <td>
-    <span class="status-badge status-badge--${m.status == 1 ? 'green' : 'crimson'}">
-        <span></span>
-        ${m.status == 1 ? 'Activo' : 'Inactivo'}
-    </span>
+                        <span class="status-badge status-badge--${m.status == 1 ? 'green' : 'crimson'}">
+                            <span></span>
+                            ${m.status == 1 ? 'Activo' : 'Inactivo'}
+                        </span>
                     </td>
                     <td>
                       <div class="row-actions">
-                        <button class="icon-text-button" type="button">
+                        <button class="icon-text-button btn-editar-mag" type="button">
                           <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="m4 20 4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11zM14.5 7l3 3"/>
                           </svg>
                           Editar
                         </button>
 
-                        <!-- NUEVO BOTÓN CONECTADO AL JS -->
-                        <c:if test="${m.status == 1}">
-                          <button class="icon-text-button icon-text-button--danger btn-desactivar-mag"
-                                  type="button" data-id="${m.idMagistrate}" data-name="${m.fullName}">
-                            <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
-                              <circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>
-                            </svg>
-                            Desactivar
-                          </button>
-                        </c:if>
+                        <!-- BOTÓN DINÁMICO (ACTIVAR / DESACTIVAR) -->
+                        <button class="icon-text-button ${m.status == 1 ? 'icon-text-button--danger' : ''} btn-toggle-mag"
+                                type="button" data-id="${m.idMagistrate}" data-name="${fn:escapeXml(m.fullName)}" data-active="${m.status == 1}">
+                          <c:choose>
+                            <c:when test="${m.status == 1}">
+                              <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>
+                              </svg>
+                              Desactivar
+                            </c:when>
+                            <c:otherwise>
+                              <svg class="ui-icon ui-icon--small" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m5 12 4 4L19 6"/>
+                              </svg>
+                              Activar
+                            </c:otherwise>
+                          </c:choose>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -177,5 +185,16 @@
 <script src="${contextPath}/assets/js/ssi-api.js"></script>
 <script src="${contextPath}/assets/js/ssi-workspace.js"></script>
 <script src="${contextPath}/assets/js/ssi-magistrates.js"></script>
+<script>
+  // Implementación básica de Toast si no la tienes en este archivo
+  window.showToast = window.showToast || function(msg, type) {
+    const toast = document.getElementById("toast");
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.dataset.type = type;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  };
+</script>
 </body>
 </html>

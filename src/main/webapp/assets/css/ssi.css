@@ -932,11 +932,11 @@ td strong { color: #3f3937; font-weight: 600; }
     -webkit-backdrop-filter: blur(0.25rem);
 }
 
-/* ---------- ESTILOS DEL MODAL DE RESOLUCIÓN (CORREGIDOS Y AGRANDADOS) ---------- */
+/* ---------- ESTILOS DEL MODAL DE RESOLUCIÓN (AGRANDADO) ---------- */
 .resolution-modal {
-    width: min(100%, 55rem) !important;
-    height: 90vh !important; /* Ocupa casi toda la pantalla */
-    max-height: 90vh !important;
+    width: min(100%, 72rem) !important;
+    height: 92vh !important;
+    max-height: 92vh !important;
     display: flex !important;
     flex-direction: column !important;
     border-radius: 0.65rem;
@@ -1050,11 +1050,11 @@ td strong { color: #3f3937; font-weight: 600; }
 .editor-toolbar span { width: 1px; height: 1.2rem; margin: 0 0.3rem; background: #ddd6d1; }
 
 .resolution-editor {
-    min-height: 22rem !important;
+    min-height: 30rem !important;
     padding: 1.5rem !important;
     outline: none;
     color: #2d3748;
-    font-size: 0.9rem !important;
+    font-size: 0.95rem !important;
     line-height: 1.8 !important;
     background: #ffffff;
     overflow-y: auto;
@@ -1277,8 +1277,12 @@ td strong { color: #3f3937; font-weight: 600; }
 
     /* El modal se adapta a móvil */
     .modal-backdrop { align-items: end; padding: 0; }
-    .resolution-modal { max-height: 95vh; width: 100% !important; border-radius: 0.75rem 0.75rem 0 0; }
-    .resolution-editor { min-height: 15rem !important; } /* Un poco más pequeño en celular */
+    .resolution-modal {
+        width: 100% !important;
+        max-height: 95vh !important;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+    .resolution-editor { min-height: 18rem !important; }
 }
 
 .toast-message {
@@ -1318,4 +1322,23 @@ td strong { color: #3f3937; font-weight: 600; }
 .modal-field textarea::placeholder {
     color: #a19a96;
     font-style: italic;
+}
+
+/* ---------- Select como filter-button ---------- */
+select.filter-button {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%236d6662' stroke-width='1.7' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+    padding: 0 2rem 0 0.7rem !important;
+    height: 2.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.4rem;
+    background-color: white;
+    color: #6d6662;
+    font-size: 0.62rem;
+    font-family: inherit;
+    cursor: pointer;
 }
